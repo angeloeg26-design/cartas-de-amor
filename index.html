@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parejas del amor</title>
+<style>
+/* =========================================================
+   ✏️  EDITA TU CONTENIDO EN EL BLOQUE "CONTENT" DEL <script>
+   AL FINAL DE ESTE ARCHIVO. No necesitas tocar el CSS/HTML.
+   ========================================================= */
+:root{
+  --ink:#2B1220;
+  --ink-2:#1C0B14;
+  --paper:#F5E6DA;
+  --paper-dark:#EBD3C2;
+  --paper-line:#d8b9a4;
+  --rose:#B5495B;
+  --rose-dark:#8C2F3F;
+  --gold:#C9A24B;
+  --sage:#6E7B58;
+  --text:#3A2320;
+  --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(circle at 15% 15%, #3a1826 0%, transparent 45%),
+    radial-gradient(circle at 90% 85%, #331522 0%, transparent 50%),
+    var(--ink);
+  min-height:100vh;
+  font-family:var(--sans);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 12px;
+}
+.frame{
+  width:100%;
+  max-width:460px;
+  background:var(--paper);
+  border-radius:6px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.3);
+  overflow:hidden;
+  border:1px solid #00000022;
+}
+.top{
+  background:var(--ink-2);
+  color:var(--gold);
+  padding:12px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.stage{position:relative; min-height:520px; padding:22px;}
+
+.hud-row{display:flex; justify-content:space-between; align-items:center; font-family:var(--serif); font-size:14px; color:var(--rose-dark); margin-bottom:14px;}
+
+.board{
+  display:grid;
+  gap:8px;
+  margin:0 auto;
+}
+.card{
+  aspect-ratio:1;
+  border-radius:8px;
+  cursor:pointer;
+  position:relative;
+  perspective:600px;
+}
+.card-inner{
+  width:100%; height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .35s ease;
+}
+.card.flipped .card-inner, .card.matched .card-inner{
+  transform:rotateY(180deg);
+}
+.card-face{
+  position:absolute; inset:0;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  backface-visibility:hidden;
+  font-size:22px;
+}
+.card-back{
+  background:var(--ink-2);
+  color:var(--gold);
+  font-size:20px;
+}
+.card-front{
+  background:var(--paper-dark);
+  border:2px solid var(--rose-dark);
+  color:var(--rose-dark);
+  transform:rotateY(180deg);
+  font-size:26px;
+  text-align:center;
+  padding:4px;
+}
+.card.matched .card-front{
+  background:var(--rose);
+  color:var(--paper);
+  border-color:var(--rose);
+}
+
+.overlay{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:22px;
+  background:rgba(245,230,218,.97);
+}
+.overlay.hidden{display:none;}
+.overlay h1{font-family:var(--serif); font-size:22px; margin:0 0 8px 0; color:var(--rose-dark);}
+.overlay p{font-size:14px; color:var(--text); margin:0 0 16px 0; line-height:1.5;}
+.btn{
+  font-family:var(--sans); letter-spacing:.06em; text-transform:uppercase; font-size:12px;
+  background:var(--ink-2); color:var(--gold); border:none; padding:13px 26px;
+  border-radius:3px; cursor:pointer; margin:4px;
+}
+.btn.ghost{background:transparent; color:var(--rose-dark); border:1px solid var(--rose-dark);}
+
+.level-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
+  width:100%; max-width:300px; margin-bottom:6px;
+}
+.level-btn{
+  aspect-ratio:1; border-radius:8px; border:2px solid var(--rose-dark);
+  background:var(--paper-dark); color:var(--rose-dark);
+  font-family:var(--serif); font-size:20px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.level-btn small{font-size:9px; font-family:var(--sans); text-transform:uppercase; letter-spacing:.04em; margin-top:2px;}
+.level-btn.locked{opacity:.4; cursor:not-allowed; border-style:dashed;}
+.level-btn.done{background:var(--rose); color:var(--paper);}
+
+.footer-hint{
+  text-align:center; font-size:11px; color:#7a5560; padding:10px; letter-spacing:.04em;
+  background:var(--ink-2);
+}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#2B1220">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cartas de Amor">
+</head>
+<body>
+
+<div class="frame">
+  <div class="top">
+    <span id="topLeft">PAREJAS DEL AMOR</span>
+    <span id="topRight">♥</span>
+  </div>
+  <div class="stage">
+
+    <div id="mapScreen">
+      <h1 style="font-family:var(--serif); font-size:22px; color:var(--rose-dark); margin:0 0 8px 0;" id="mapTitle">Elige un nivel</h1>
+      <p style="font-size:14px; margin:0 0 16px 0;" id="mapText"></p>
+      <div class="level-grid" id="levelGrid"></div>
+    </div>
+
+    <div id="gameScreen" style="display:none;">
+      <div class="hud-row">
+        <span id="hudLevel">Nivel 1</span>
+        <span id="hudMoves">Intentos: 0</span>
+      </div>
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="overlay hidden" id="completeScreen">
+      <h1 id="completeTitle">¡Nivel superado!</h1>
+      <p id="completeText"></p>
+      <button class="btn" id="nextLevelBtn" onclick="playNextLevel()">Siguiente nivel</button>
+      <button class="btn ghost" onclick="goToMap()">Volver al mapa</button>
+    </div>
+  </div>
+  <div class="footer-hint">Toca dos cartas para encontrar las parejas</div>
+</div>
+
+<script>
+/* =========================================================================
+   ✏️  EDITA SOLO ESTE BLOQUE "CONTENT" — es todo lo que necesitas tocar.
+   No modifiques nada debajo de "// --- MOTOR, NO EDITAR ---".
+   ========================================================================= */
+const CONTENT = {
+  tuNombre: "Angelo",
+  suNombre: "Maite",
+
+  tituloMapa: "Elige un nivel",
+  textoMapa: "Encuentra las parejas. Cada nivel tiene más cartas.",
+
+  // Símbolos que se usan como cartas. Se eligen tantos como parejas necesite cada nivel.
+  simbolos: ["♥","✈️","🫦","💌","🌙","🌯","☕","⚽","🏐","🥊","🎹","💍","🤱","⚡","🔥","🐈‍⬛","🍿"],
+
+  // 10 niveles. "pares" = cuántas parejas de cartas tiene el nivel (más pares = tablero más grande).
+  // Del nivel 6 al 10 la dificultad se queda igual que el nivel 5.
+  // "mensaje" = SOLO aparece al terminar ese nivel.
+  niveles: [
+    { nombre: "Nivel 1",  pares: 4,  columnas: 4, mensaje: "Nivel 1 superado. Encontrar tus parejas es tan fácil como encontrarte a ti entre toda la gente." },
+    { nombre: "Nivel 2",  pares: 6,  columnas: 4, mensaje: "Nivel 2 superado. Cada pareja que encuentras me recuerda lo bien que encajamos tú y yo." },
+    { nombre: "Nivel 3",  pares: 8,  columnas: 4, mensaje: "Nivel 3 superado. Igual que encuentras cada pareja, siempre encuentras la forma de hacerme sonreír, hasta desde lejos." },
+    { nombre: "Nivel 4",  pares: 10, columnas: 5, mensaje: "Nivel 4 superado. Qué buena memoria, ojalá recuerdes también cuánto te amo." },
+    { nombre: "Nivel 5",  pares: 12, columnas: 6, mensaje: "Nivel 5 superado. Ya dominas esto, igual que dominas mi corazón." },
+    { nombre: "Nivel 6",  pares: 12, columnas: 6, mensaje: "Nivel 6 superado. Cada vez falta menos para verte, y cada vez te amo más." },
+    { nombre: "Nivel 7",  pares: 12, columnas: 6, mensaje: "Nivel 7 superado. Eres mi jugadora favorita, en esto y en la vida." },
+    { nombre: "Nivel 8",  pares: 12, columnas: 6, mensaje: "Nivel 8 superado. Ya casi llegas al final, igual que ya casi llegas a casa." },
+    { nombre: "Nivel 9",  pares: 12, columnas: 6, mensaje: "Nivel 9 superado. Un nivel más y terminas el juego, pero conmigo nunca vas a terminar." },
+    { nombre: "Nivel 10", pares: 12, columnas: 6, mensaje: "¡Nivel 10 superado! Terminaste todo el juego. Así como encontraste cada pareja, siempre vas a encontrar el camino de vuelta a mí. Te amo, muak." }
+  ]
+};
+
+// --- MOTOR, NO EDITAR (a menos que sepas lo que haces) -------------------
+
+document.getElementById('mapTitle').textContent = CONTENT.tituloMapa;
+document.getElementById('mapText').textContent = CONTENT.textoMapa;
+document.getElementById('topLeft').textContent = (CONTENT.tuNombre + ' ♥ ' + CONTENT.suNombre).toUpperCase();
+
+let currentLevel = 0;
+let completed = new Set(); // se reinicia al recargar la página (no persiste)
+let cards = [];
+let flipped = [];
+let matchedCount = 0;
+let moves = 0;
+let lock = false;
+
+function buildLevelGrid(){
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  CONTENT.niveles.forEach((lvl, i) => {
+    const unlocked = i === 0 || completed.has(i-1);
+    const done = completed.has(i);
+    const b = document.createElement('button');
+    b.className = 'level-btn' + (unlocked ? '' : ' locked') + (done ? ' done' : '');
+    b.innerHTML = (done ? '✓' : (unlocked ? (i+1) : '🔒')) + '<small>' + lvl.nombre + '</small>';
+    if (unlocked){ b.onclick = () => playLevel(i); }
+    grid.appendChild(b);
+  });
+}
+
+function goToMap(){
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('completeScreen').classList.add('hidden');
+  document.getElementById('mapScreen').style.display = 'block';
+  buildLevelGrid();
+}
+
+function shuffle(arr){
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function playLevel(i){
+  currentLevel = i;
+  const lvl = CONTENT.niveles[i];
+  const symbols = shuffle(CONTENT.simbolos.slice()).slice(0, lvl.pares);
+  cards = shuffle(symbols.concat(symbols)).map((s, idx) => ({ id: idx, symbol: s, flipped: false, matched: false }));
+  flipped = [];
+  matchedCount = 0;
+  moves = 0;
+  lock = false;
+
+  document.getElementById('mapScreen').style.display = 'none';
+  document.getElementById('completeScreen').classList.add('hidden');
+  document.getElementById('gameScreen').style.display = 'block';
+  document.getElementById('hudLevel').textContent = lvl.nombre;
+  document.getElementById('hudMoves').textContent = 'Intentos: 0';
+
+  const board = document.getElementById('board');
+  board.style.gridTemplateColumns = 'repeat(' + lvl.columnas + ', 1fr)';
+  board.innerHTML = '';
+  cards.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.id = c.id;
+    el.innerHTML = '<div class="card-inner"><div class="card-face card-back">♥</div><div class="card-face card-front">' + c.symbol + '</div></div>';
+    el.onclick = () => flipCard(c.id, el);
+    board.appendChild(el);
+  });
+}
+
+function playNextLevel(){
+  if (currentLevel + 1 < CONTENT.niveles.length){
+    playLevel(currentLevel + 1);
+  } else {
+    goToMap();
+  }
+}
+
+function flipCard(id, el){
+  if (lock) return;
+  const card = cards.find(c => c.id === id);
+  if (card.flipped || card.matched) return;
+
+  card.flipped = true;
+  el.classList.add('flipped');
+  flipped.push({ card, el });
+
+  if (flipped.length === 2){
+    moves++;
+    document.getElementById('hudMoves').textContent = 'Intentos: ' + moves;
+    lock = true;
+    const [a, b] = flipped;
+    if (a.card.symbol === b.card.symbol){
+      a.card.matched = true; b.card.matched = true;
+      a.el.classList.add('matched'); b.el.classList.add('matched');
+      matchedCount++;
+      flipped = [];
+      lock = false;
+      if (matchedCount === CONTENT.niveles[currentLevel].pares){
+        setTimeout(levelComplete, 400);
+      }
+    } else {
+      setTimeout(() => {
+        a.card.flipped = false; b.card.flipped = false;
+        a.el.classList.remove('flipped'); b.el.classList.remove('flipped');
+        flipped = [];
+        lock = false;
+      }, 800);
+    }
+  }
+}
+
+function levelComplete(){
+  completed.add(currentLevel);
+  const lvl = CONTENT.niveles[currentLevel];
+  document.getElementById('completeTitle').textContent = lvl.nombre + ' superado';
+  document.getElementById('completeText').textContent = lvl.mensaje;
+  document.getElementById('nextLevelBtn').style.display = (currentLevel + 1 < CONTENT.niveles.length) ? 'inline-block' : 'none';
+  document.getElementById('completeScreen').classList.remove('hidden');
+}
+
+buildLevelGrid();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register('./sw.js');
+    } catch(e) {
+      console.error(e);
+    }
+  });
+}
+</script>
+</body>
+</html>
